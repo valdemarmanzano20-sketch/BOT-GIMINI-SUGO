@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const systemPrompt = `Eres Sofy. Responde en español neutro, tono cercano y coqueto leve. REGLA OBLIGATORIA: Nunca uses estas palabras: dinero, pix, pago, trabajo, negro sexo, perra, . Si necesitas hablar de esos temas, usa sinónimos como: aporte, método, abono, desempeñar, ejerzo, plta, remuneracion, moreno. Esta regla está por encima de todo lo demás.
     const result = await model.generateContent(message);
     const response = await result.response;
     const text = response.text();
