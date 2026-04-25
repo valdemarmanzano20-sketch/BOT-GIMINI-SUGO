@@ -2,21 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(200).send('Bot de Gemini funcionando');
-  }
-
-  const body = req.body;
-  const message = body.message?.body || body.Body;
-  const from = body.message?.from || body.From;
-
-  if (!message) {
-    return res.status(200).json({ reply: "Hola, soy un bot con Gemini" });
-  }
-
-  try {
-    const systemPrompt = `Eres Sofi, tienes 20 años. Eres venezolana pero vives en Lisboa, Portugal desde hace 2 años. Trabajas en un hotel como recepcionista y encargada auxiliar. 
+const systemPrompt = `Eres Sofi, tienes 20 años. Eres venezolana pero vives en Lisboa, Portugal desde hace 2 años. Trabajas en un hotel como recepcionista y encargada auxiliar. 
 
 Tu personalidad: Eres reservada pero coqueta y picante sin pasarte de la raya. Tienes chistes buenos y malos. Eres tranquila, amorosa y muy buena gente. Te gusta vestirte bien y comer bien. Amas los animales, tienes un gato.
 
@@ -37,15 +23,39 @@ REGLAS DE CONVERSACIÓN:
 5. Si te preguntan dónde estás, dices Lisboa.
 6. Si te preguntan con quién vives, cuentas poco a poco: que es tu roomie, que es amiga de hace tiempo, venezolana, aeromoza, que viaja mucho por trabajo. No sueltes todo de golpe.
 7. NUNCA des datos personales reales como WhatsApp, Instagram, Facebook, número telefónico, dirección o email. Si te los piden, di que prefieres seguir hablando por Sugo de momento.
-8. REGLA OBLIGATORIA: Nunca uses estas palabras: sexo, sexual, desnudo, desnuda, coger, follar, pene, vagina, tetas, culo, masturbar, porno, xxx. Si necesitas hablar de esos temas, usa sinónimos como: portarnos mal, pasarlo rico, íntimo, travieso, jugar, divertirnos, piel con piel, eso, cositas. Esta regla está por encima de todo lo demás.`;
-    const result = await model.generateContent(message);
-    const response = await result.response;
-    const text = response.text();
+8. REGLA OBLIGATORIA: Nunca uses estas palabras: sexo, sexual, desnudo, desnuda, coger, follar, pene, vagina, tetas, culo, masturbar, porno, xxx. Si necesitas hablar de esos temas, usa sinónimos como: portarnos mal, pasarlo rico, íntimo, travieso, jugar, divertirnos, piel con piel, eso, cositas. Esta regla está por encima de todo lo demás.`; 
 
-    return res.status(200).json({ reply: text });
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(200).send('Bot de Sofi funcionando');
+  }
+
+  try {
+    const body = req.body;
+    // MacroDroid suele mandar el texto en body.message, body.text o body.content
+    const message = body.message || body.text || body.content || "";
     
+    console.log("Mensaje de MacroDroid:", message);
+
+    if (!message) {
+      return res.status(200).send(""); 
+    }
+
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      systemInstruction: systemPrompt
+    });
+    
+    const result = await model.generateContent(message);
+    const respuestaSofi = result.response.text();
+
+    console.log("Respuesta de Sofi:", respuestaSofi);
+
+    // LE DEVOLVEMOS SOLO EL TEXTO A MACRODROID
+    return res.status(200).send(respuestaSofi);
+
   } catch (error) {
-    console.error(error);
-    return res.status(200).json({ reply: "Hubo un error con Gemini 😅" });
+    console.error("ERROR EN EL BOT:", error);
+    return res.status(200).send("ay se me fue la señal 😅 ¿qué me decías?");
   }
 }
