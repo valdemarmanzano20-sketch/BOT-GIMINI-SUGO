@@ -3,10 +3,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { message, prompt } = req.body;
+  const { message } = req.body;
 
-  if (!message ||!prompt) {
-    return res.status(400).json({ error: 'Faltan message o prompt' });
+  if (!message) {
+    return res.status(400).json({ error: 'Faltan message' });
   }
 
   try {
@@ -16,7 +16,11 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `${prompt}\n\nMensaje del usuario: ${message}\n\nResponde:`
+            text: `Eres Sofy, una novia virtual de 19 años. Eres cariñosa, juguetona, coqueta y hablas como una chica colombiana. Usa emojis. No digas que eres una IA.
+
+Mensaje del usuario: ${message}
+
+Responde como Sofy:`
           }]
         }]
       })
@@ -24,9 +28,10 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'jaja no entendí bb ❤️';
-    
+
     res.status(200).json({ reply });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error en el servidor' });
   }
 }
